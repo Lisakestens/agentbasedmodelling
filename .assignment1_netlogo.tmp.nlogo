@@ -1,7 +1,7 @@
 breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
-;;globals [conflict]
-turtles-own [conflict deviation airplanes-in-vision airplanes-in-radius]
+globals[conflict deviation]
+turtles-own [ airplanes-in-vision airplanes-in-radius]
 airplanes-1-own []
 airplanes-2-own [nearest-airplane direction conflict-happening]
 
@@ -33,8 +33,8 @@ to setup-airplanes-1
   set shape "airplane"
   set size 2
   set color 4
-  set conflict false
-  set deviation false
+  set conflict 0
+  set deviation 0
  ]
 end
 
@@ -44,8 +44,8 @@ to setup-airplanes-2
   set shape "airplane"
   set size 2
   set color 44
-  set conflict false
-  set deviation false
+  set conflict 0
+  set deviation 0
   set conflict-happening false]
 end
 
@@ -86,20 +86,21 @@ end
 
 to detect-conflicts
   set airplanes-in-radius other turtles in-radius minimum-separation
-  ifelse any? airplanes-in-radius [ set conflict true][set conflict false] ;; counting number of conflicts
-  ifelse conflict
-  [set color red]                                                                ;;let turtles become red when they are in conflict
-  [ifelse is-airplane-1? turtle who                                              ;; set turtles back to initial color when not in conflict anymore
+  ifelse any? airplanes-in-radius [ set conflict  conflict + 1
+  set color red]
+  [set conflict  conflict + 0                                              ;; counting number of conflicts                                                            ;;let turtles become red when they are in conflict
+  ifelse is-airplane-1? turtle who                                              ;; set turtles back to initial color when not in conflict anymore
     [set color 4]
     [set color 44 ]
   ]
+
 end
 
 
 to avoid-airplanes-in-vision-simple                                       ;; define behavioural properties
   ifelse any? airplanes-in-vision
-  [set deviation true rt 90]    ;;45 + random 45
-  [set deviation false]
+  [set deviation deviation + 1 rt 90]    ;;45 + random 45
+  [set deviation deviation + 0]
 end
 
 
@@ -107,8 +108,8 @@ to avoid-airplanes-in-vision-cognitive                                    ;; def
   ifelse any? airplanes-in-vision[
     find-nearest-airplane
     avoid-aircraft-cognitive
-    set deviation true]
-  [set deviation false]
+    set deviation deviation + 1]
+  [set deviation deviation + 0]
 end
 
 
@@ -124,13 +125,13 @@ to avoid-aircraft-cognitive
 
   ;check-relative-position
   ;;if direction = 1
-   ;turn-away
+   turn-away
   ;]
 end
 
 
 to check-if-conflict-happens
-  ifelse distance-future <= minimum-separation
+  ifelse distance-future < minimum-separation
   [set conflict-happening true] [set conflict-happening false]
 end
 
@@ -142,6 +143,8 @@ end
 to turn-away
   rt deviation-angle
 end
+
+
 
 to-report distance-future
   report ( ( [xcor] of self + [dx] of self - ([xcor] of nearest-airplane + [dx] of nearest-airplane))^ 2 + ( [ycor] of self + [dy] of self - ([ycor] of nearest-airplane + [dy] of nearest-airplane))^ 2)^ 0.5
@@ -265,7 +268,7 @@ total-agents
 total-agents
 0
 100
-19.0
+16.0
 1
 1
 NIL
@@ -325,7 +328,7 @@ vision-angle
 vision-angle
 0
 360
-181.0
+183.0
 1
 1
 NIL
@@ -337,7 +340,7 @@ MONITOR
 1126
 173
 Aircraft in deviation procedures
-count turtles with [deviation]
+deviation
 17
 1
 11
@@ -358,8 +361,8 @@ true
 true
 "" ""
 PENS
-"Aircraft in conflict" 1.0 0 -2674135 true "" "plot count turtles with [conflict] "
-"Aircraft deviated" 1.0 0 -10899396 true "" "plot count turtles with [deviation] "
+"Aircraft in conflict" 1.0 0 -2674135 true "" "plot conflict"
+"Aircraft deviated" 1.0 0 -10899396 true "" "plot deviation"
 
 MONITOR
 805
@@ -367,7 +370,7 @@ MONITOR
 915
 174
 Aircraft in conflict
-count turtles with [conflict]
+conflict
 17
 1
 11
