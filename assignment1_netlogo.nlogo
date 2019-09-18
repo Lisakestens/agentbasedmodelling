@@ -1,5 +1,6 @@
 breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
+;;globals [conflict]
 turtles-own [conflict deviation airplanes-in-vision airplanes-in-radius]
 airplanes-1-own []
 airplanes-2-own [nearest-airplane direction conflict-happening]
@@ -97,7 +98,7 @@ end
 
 to avoid-airplanes-in-vision-simple                                       ;; define behavioural properties
   ifelse any? airplanes-in-vision
-  [set deviation true rt 45 + random 45]
+  [set deviation true rt 90]    ;;45 + random 45
   [set deviation false]
 end
 
@@ -118,10 +119,13 @@ end
 to avoid-aircraft-cognitive
   check-if-conflict-happens
   if conflict-happening[
-    ;;check-relative-position
+    set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane]
+
+
+  ;check-relative-position
   ;;if direction = 1
-    turn-away
-  ]
+   turn-away
+  ;]
 end
 
 
@@ -145,7 +149,6 @@ end
 
 to-report deviation-angle
   report atan minimum-separation  distance-to-calc-deviation
-  ;;[report 90][report asin (minimum-separation / length-until-intersection)]
 end
 
 to-report distance-to-calc-deviation
@@ -160,7 +163,6 @@ end
 to-report length-until-intersection
   report  abs sin ((90 - [heading] of nearest-airplane) mod 90 ) *  distance nearest-airplane / abs sin angle-between-headings
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -263,7 +265,7 @@ total-agents
 total-agents
 0
 100
-41.0
+16.0
 1
 1
 NIL
@@ -278,7 +280,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-64.0
+0.0
 1
 1
 %
@@ -308,7 +310,7 @@ speed
 speed
 0
 4
-0.4
+0.6
 0.1
 1
 NIL

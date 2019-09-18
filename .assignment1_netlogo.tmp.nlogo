@@ -1,5 +1,6 @@
 breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
+;;globals [conflict]
 turtles-own [conflict deviation airplanes-in-vision airplanes-in-radius]
 airplanes-1-own []
 airplanes-2-own [nearest-airplane direction conflict-happening]
@@ -97,7 +98,7 @@ end
 
 to avoid-airplanes-in-vision-simple                                       ;; define behavioural properties
   ifelse any? airplanes-in-vision
-  [set deviation true rt 45 + random 45]
+  [set deviation true rt 90]    ;;45 + random 45
   [set deviation false]
 end
 
@@ -118,10 +119,13 @@ end
 to avoid-aircraft-cognitive
   check-if-conflict-happens
   if conflict-happening[
-    ;;check-relative-position
+    set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane]
+
+
+  ;check-relative-position
   ;;if direction = 1
-    turn-away
-  ]
+   ;turn-away
+  ;]
 end
 
 
@@ -145,7 +149,6 @@ end
 
 to-report deviation-angle
   report atan minimum-separation  distance-to-calc-deviation
-  ;;[report 90][report asin (minimum-separation / length-until-intersection)]
 end
 
 to-report distance-to-calc-deviation
@@ -161,16 +164,15 @@ to-report length-until-intersection
   report  abs sin ((90 - [heading] of nearest-airplane) mod 90 ) *  distance nearest-airplane / abs sin angle-between-headings
 end
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-200
-10
-834
-645
+297
+54
+747
+505
 -1
 -1
-7.365
+5.2
 1
 10
 1
@@ -208,10 +210,10 @@ NIL
 1
 
 BUTTON
-103
-50
-166
-83
+99
+55
+162
+88
 NIL
 go\n
 T
@@ -263,7 +265,7 @@ total-agents
 total-agents
 0
 100
-13.0
+19.0
 1
 1
 NIL
@@ -278,7 +280,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-5.0
+0.0
 1
 1
 %
@@ -308,22 +310,11 @@ speed
 speed
 0
 4
-0.4
+0.6
 0.1
 1
 NIL
 HORIZONTAL
-
-MONITOR
-29
-699
-143
-744
-aircraft in conflicts
-count turtles with [conflict?]
-17
-1
-11
 
 SLIDER
 3
@@ -341,10 +332,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-970
-44
-1165
-89
+931
+128
+1126
+173
 Aircraft in deviation procedures
 count turtles with [deviation]
 17
@@ -352,10 +343,10 @@ count turtles with [deviation]
 11
 
 PLOT
-956
-254
-1424
-567
+801
+189
+1269
+502
 Aircraft deviations & conflict
 time
 conflicts/separations
@@ -371,10 +362,10 @@ PENS
 "Aircraft deviated" 1.0 0 -10899396 true "" "plot count turtles with [deviation] "
 
 MONITOR
-852
-35
-962
-80
+805
+129
+915
+174
 Aircraft in conflict
 count turtles with [conflict]
 17
