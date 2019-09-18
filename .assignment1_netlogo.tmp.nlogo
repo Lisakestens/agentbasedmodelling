@@ -164,13 +164,13 @@ end
 
 @#$#@#$#@
 GRAPHICS-WINDOW
-297
-54
-747
-505
+200
+10
+834
+645
 -1
 -1
-5.2
+7.365
 1
 10
 1
@@ -208,10 +208,10 @@ NIL
 1
 
 BUTTON
-99
-55
-162
-88
+103
+50
+166
+83
 NIL
 go\n
 T
@@ -263,7 +263,7 @@ total-agents
 total-agents
 0
 100
-41.0
+13.0
 1
 1
 NIL
@@ -278,7 +278,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-64.0
+5.0
 1
 1
 %
@@ -314,6 +314,17 @@ speed
 NIL
 HORIZONTAL
 
+MONITOR
+29
+699
+143
+744
+aircraft in conflicts
+count turtles with [conflict?]
+17
+1
+11
+
 SLIDER
 3
 444
@@ -330,10 +341,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-931
-128
-1126
-173
+970
+44
+1165
+89
 Aircraft in deviation procedures
 count turtles with [deviation]
 17
@@ -341,10 +352,10 @@ count turtles with [deviation]
 11
 
 PLOT
-801
-189
-1269
-502
+956
+254
+1424
+567
 Aircraft deviations & conflict
 time
 conflicts/separations
@@ -360,10 +371,10 @@ PENS
 "Aircraft deviated" 1.0 0 -10899396 true "" "plot count turtles with [deviation] "
 
 MONITOR
-805
-129
-915
-174
+852
+35
+962
+80
 Aircraft in conflict
 count turtles with [conflict]
 17
