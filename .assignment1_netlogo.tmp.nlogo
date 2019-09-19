@@ -2,8 +2,7 @@ breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
 globals[conflict deviation]
 turtles-own [ airplanes-in-vision airplanes-in-radius]
-airplanes-1-own []
-airplanes-2-own [nearest-airplane direction conflict-happening]
+airplanes-2-own [nearest-airplane conflict-happening]
 
 ;;setup and go
 to setup
@@ -15,81 +14,84 @@ to setup
 end
 
 to go
-  if ticks >= simulation-time [stop] ;;max amount of ticks in the simulation
+  if ticks >= simulation-time [stop]                                  ;;max amount of ticks in the simulation
   ask airplanes-1 [self-separate-simple]
   ask airplanes-2 [self-separate-cognitive]
   tick
 end
 
 
-;;SET UP patches en turtles
+;SET UP
+
 to setup-patches
   ask patches [set pcolor sky + 1 ]
+  set conflict 0
+  set deviation 0                                                  ;; Set counter of number of aircraft in conflicts and deviations to 0
 end
 
 to setup-airplanes-1
-  create-airplanes-1 total-agents * agent-1-percent / 100
-  ask airplanes-1 [setxy random-xcor random-ycor
+  create-airplanes-1 total-agents * agent-1-percent / 100          ;; set the amount of agents of type I
+  random-seed 465677                                               ;; make sure that the random generator will place agents at same initial conditions
+  ask airplanes-1 [setxy random-xcor random-ycor                   ;; set random position
+  set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
   set size 2
-  set color 4
-  set conflict 0
-  set deviation 0
+  set color 4                                                      ;; Set color grey
  ]
 end
 
 to setup-airplanes-2
-  create-airplanes-2 total-agents * (1 - agent-1-percent / 100) ;; use sliders to select the division between agents
-  ask airplanes-2 [setxy random-xcor random-ycor                 ;; initially set them at a random position and orientation
+  create-airplanes-2 total-agents * (1 - agent-1-percent / 100)    ;; set the amount of agents of type II
+  random-seed 58896                                                ;; make sure that the random generator will place agents at same initial conditions
+  ask airplanes-2 [setxy random-xcor random-ycor                   ;; set  random position
+  set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
   set size 2
-  set color 44
-  set conflict 0
-  set deviation 0
-  set conflict-happening false]
+  set color 44                                                     ;; set color yellow
+  set conflict-happening false]                                    ;; set believe that a conflict will arise false
 end
 
 
 
-;;DEFINE THE FUNCTIONS UNDER TO GO
-
+;; GO
 
 to self-separate-simple ;
-  move-turtles                          ;; start moving
-  detect-airplanes                      ;;detect other turtles when they are in radius and vision
-  avoid-airplanes-in-vision-simple      ;; avoid conflict by avoiding in a reactive way
+  move-turtles                                                     ;; moving
+  detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
+  deviate-simple                                                   ;; avoid conflict by avoiding in a reactive way
 end
 
 
 to self-separate-cognitive ;
-  move-turtles
-  detect-airplanes
-  avoid-airplanes-in-vision-cognitive   ;; avoid conflict by avoiding in a proactive way
+  move-turtles                                                     ;; moving
+  detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
+  deviate-cognitive                                                ;; avoid conflict by avoiding in a proactive way
 end
 
 
-;; Define functions under self-separate
+; SELF-SEPARATE
 
 to move-turtles
-    forward speed        ;; move forward by indicated speed
+    forward speed                                                  ;; move forward by indicated speed
 end
 
 to detect-airplanes
-  detect-airplanes-in-vision    ;; agents look in a cone in front of them
-  detect-conflicts               ;; detect conflicts when airplanes are within a radius of minimum separation
+  detect-airplanes-in-vision                                       ;; agents look in a cone in front of them
+  detect-conflicts                                                 ;; detect conflicts when airplanes are within a radius of minimum separation
 end
 
+;; DETECT AIRPLANES
 
 to detect-airplanes-in-vision
-  set airplanes-in-vision other turtles in-cone vision vision-angle  ;; assumed that an agent can look 90 degrees to the right and the left
+  set airplanes-in-vision other turtles in-cone vision vision-angle ;; assumed that an agent can look 90 degrees to the right and the left
 end
 
 to detect-conflicts
-  set airplanes-in-radius other turtles in-radius minimum-separation
-  ifelse any? airplanes-in-radius [ set conflict  conflict + 1
+  set airplanes-in-radius other turtles in-radius minimum-separation ;;look whether agent is in a conflict
+  ifelse any? airplanes-in-radius [ set conflict  conflict + 1       ;; if there is a conflict, turn aircraft red and add to total # of conflicts
   set color red]
-  [set conflict  conflict + 0                                              ;; counting number of conflicts                                                            ;;let turtles become red when they are in conflict
-  ifelse is-airplane-1? turtle who                                              ;; set turtles back to initial color when not in conflict anymore
+  [set conflict  conflict + 0
+  ifelse is-airplane-1? turtle who                                   ;; set turtles back to initial color when not in conflict anymore
     [set color 4]
     [set color 44 ]
   ]
@@ -97,54 +99,50 @@ to detect-conflicts
 end
 
 
-to avoid-airplanes-in-vision-simple                                       ;; define behavioural properties
-  ifelse any? airplanes-in-vision
-  [set deviation deviation + 1 rt 90]    ;;45 + random 45
+to deviate-simple                                                    ;; define  behavioural property (used by reactive agents)
+  ifelse any? airplanes-in-vision                                    ;; If the agent observes another agent or more in its vision, it rotates 90 degrees
+  [set deviation deviation + 1 rt 90]                                ;; Count number of deviations performed.
   [set deviation deviation + 0]
 end
 
 
-to avoid-airplanes-in-vision-cognitive                                    ;; define cognitive properties
-  ifelse any? airplanes-in-vision[
-    find-nearest-airplane
-    avoid-aircraft-cognitive
-    set deviation deviation + 1]
-  [set deviation deviation + 0]
+to deviate-cognitive                                                 ;; define the cognitive properties (used by proactive agents)
+  if any? airplanes-in-vision[                                       ;; Agents observes another agents or more in its vision
+    find-nearest-airplane                                            ;; The agent creates believe about the agent which is closest to him
+    check-if-conflict-happens
+    avoid-aircraft-cognitive]                                        ;; the agent avoids the nearest aircraft in a cognitive way
 end
 
+;; DEVIATE COGNITIVE
 
 to find-nearest-airplane
-   set nearest-airplane min-one-of airplanes-in-vision [distance myself]  ;; find nearest airplane
+   set nearest-airplane min-one-of
+  airplanes-in-vision [distance myself]                              ;; find nearest airplane in vision
 end
-
-to avoid-aircraft-cognitive
-  check-if-conflict-happens
-  if conflict-happening[
-    set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane]
-
-
-  ;check-relative-position
-  ;;if direction = 1
-   turn-away
-  ;]
-end
-
 
 to check-if-conflict-happens
-  ifelse distance-future < minimum-separation
-  [set conflict-happening true] [set conflict-happening false]
+  ifelse distance-future =< minimum-separation                       ;; check whether a conflict will arise at the next tick
+  [set conflict-happening true] [set conflict-happening false]       ;; if yes, the agent will believe that a conflict will happen
 end
 
-to check-relative-position
-  ifelse [xcor] of nearest-airplane <=  [xcor] of self        ;; check where nearest airplane is
-  [set direction 1] [set direction -1]                        ;; turn right of the other plane is to your left, turn left if the other plane is to your right.
+
+to avoid-aircraft-cognitive
+  ifelse conflict-happening[                                        ;; if the agents believes a conflict will happen
+    align-heading                                                   ;; the agent align its heading
+    turn-away                                                       ;; the agent turns away
+    set deviation deviation + 1]                                    ;; count number of deviations performed
+  [set deviation deviation + 0]
+end
+
+
+
+to align-heading
+  set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
 end
 
 to turn-away
-  rt deviation-angle
+  rt deviation-angle + angle-extra
 end
-
-
 
 to-report distance-future
   report ( ( [xcor] of self + [dx] of self - ([xcor] of nearest-airplane + [dx] of nearest-airplane))^ 2 + ( [ycor] of self + [dy] of self - ([ycor] of nearest-airplane + [dy] of nearest-airplane))^ 2)^ 0.5
@@ -158,14 +156,6 @@ to-report distance-to-calc-deviation
    report (([xcor] of self  - [xcor] of nearest-airplane - [dx] of nearest-airplane)^ 2 + ( [ycor] of self - [ycor] of nearest-airplane - [dy] of nearest-airplane)^ 2)^ 0.5
 end
 
-
-to-report angle-between-headings
-  report abs subtract-headings [heading] of nearest-airplane [heading] of self
-end
-
-to-report length-until-intersection
-  report  abs sin ((90 - [heading] of nearest-airplane) mod 90 ) *  distance nearest-airplane / abs sin angle-between-headings
-end
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -268,7 +258,7 @@ total-agents
 total-agents
 0
 100
-16.0
+41.0
 1
 1
 NIL
@@ -283,7 +273,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-0.0
+60.0
 1
 1
 %
@@ -298,7 +288,7 @@ simulation-time
 simulation-time
 0
 500
-500.0
+240.0
 10
 1
 NIL
@@ -374,6 +364,21 @@ conflict
 17
 1
 11
+
+SLIDER
+7
+102
+179
+135
+angle-extra
+angle-extra
+0
+90
+45.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
