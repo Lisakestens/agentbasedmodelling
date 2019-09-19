@@ -58,7 +58,7 @@ end
 to self-separate-simple ;
   move-turtles                                                     ;; moving
   detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
-  deviate-simple                                                   ;; avoid conflict by avoiding in a reactive way
+  deviate-simple                                                   ;; avoid conflict by  in a reactive way
 end
 
 
@@ -121,7 +121,7 @@ to find-nearest-airplane
 end
 
 to check-if-conflict-happens
-  ifelse distance-future =< minimum-separation                       ;; check whether a conflict will arise at the next tick
+  ifelse distance-future <= minimum-separation                       ;; check whether a conflict will arise at the next tick
   [set conflict-happening true] [set conflict-happening false]       ;; if yes, the agent will believe that a conflict will happen
 end
 
@@ -288,7 +288,7 @@ simulation-time
 simulation-time
 0
 500
-240.0
+150.0
 10
 1
 NIL

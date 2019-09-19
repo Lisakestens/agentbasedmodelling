@@ -58,14 +58,14 @@ end
 to self-separate-simple ;
   move-turtles                                                     ;; moving
   detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
-  deviate-simple                                                   ;; avoid conflict by avoiding in a reactive way
+  deviate-simple                                                   ;; avoid conflict by deviating in a reactive way
 end
 
 
 to self-separate-cognitive ;
   move-turtles                                                     ;; moving
   detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
-  deviate-cognitive                                                ;; avoid conflict by avoiding in a proactive way
+  deviate-cognitive                                                ;; avoid conflict by deviating in a proactive way
 end
 
 
@@ -134,7 +134,7 @@ to avoid-aircraft-cognitive
   [set deviation deviation + 0]
 end
 
-
+;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
   set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
@@ -143,6 +143,9 @@ end
 to turn-away
   rt deviation-angle + angle-extra
 end
+
+
+;; REPORT NEEDED GEOMETRY AND DISTANCES
 
 to-report distance-future
   report ( ( [xcor] of self + [dx] of self - ([xcor] of nearest-airplane + [dx] of nearest-airplane))^ 2 + ( [ycor] of self + [dy] of self - ([ycor] of nearest-airplane + [dy] of nearest-airplane))^ 2)^ 0.5
