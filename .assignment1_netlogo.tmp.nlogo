@@ -31,7 +31,7 @@ end
 
 to setup-airplanes-1
   create-airplanes-1 total-agents * agent-1-percent / 100          ;; set the amount of agents of type I
-  random-seed 465677                                               ;; make sure that the random generator will place agents at same initial conditions
+  random-seed 465677                                                ;; make sure that the random generator will place agents at same initial conditions
   ask airplanes-1 [setxy random-xcor random-ycor                   ;; set random position
   set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
@@ -58,14 +58,14 @@ end
 to self-separate-simple ;
   move-turtles                                                     ;; moving
   detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
-  deviate-simple                                                   ;; avoid conflict by  in a reactive way
+  deviate-simple                                                   ;; avoid conflict by deviating in a reactive way
 end
 
 
 to self-separate-cognitive ;
   move-turtles                                                     ;; moving
   detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
-  deviate-cognitive                                                ;; avoid conflict by avoiding in a proactive way
+  deviate-cognitive                                                ;; avoid conflict by deviating in a proactive way
 end
 
 
@@ -134,7 +134,7 @@ to avoid-aircraft-cognitive
   [set deviation deviation + 0]
 end
 
-
+;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
   set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
@@ -143,6 +143,9 @@ end
 to turn-away
   rt deviation-angle + angle-extra
 end
+
+
+;; REPORT NEEDED GEOMETRY AND DISTANCES
 
 to-report distance-future
   report ( ( [xcor] of self + [dx] of self - ([xcor] of nearest-airplane + [dx] of nearest-airplane))^ 2 + ( [ycor] of self + [dy] of self - ([ycor] of nearest-airplane + [dy] of nearest-airplane))^ 2)^ 0.5
@@ -155,7 +158,6 @@ end
 to-report distance-to-calc-deviation
    report (([xcor] of self  - [xcor] of nearest-airplane - [dx] of nearest-airplane)^ 2 + ( [ycor] of self - [ycor] of nearest-airplane - [dy] of nearest-airplane)^ 2)^ 0.5
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -282,7 +284,7 @@ HORIZONTAL
 SLIDER
 3
 261
-175
+136
 294
 simulation-time
 simulation-time
@@ -375,6 +377,21 @@ angle-extra
 0
 90
 45.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+141
+261
+236
+294
+seed
+seed
+0
+100
+50.0
 1
 1
 NIL
