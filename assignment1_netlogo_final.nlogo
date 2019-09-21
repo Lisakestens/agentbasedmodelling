@@ -1,7 +1,7 @@
 breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
 globals[conflict deviation]
-turtles-own [ airplanes-in-vision airplanes-in-radius]
+turtles-own [ airplanes-in-vision airplanes-in-radius airplanes-in-vision-cog]
 airplanes-2-own [nearest-airplane conflict-happening]
 
 ;;setup and go
@@ -31,7 +31,7 @@ end
 
 to setup-airplanes-1
   create-airplanes-1 total-agents * agent-1-percent / 100          ;; set the amount of agents of type I
-  ;;random-seed 465677   + seed                                             ;; make sure that the random generator will place agents at same initial conditions
+  ;random-seed 465677 + seed                                        ;; make sure that the random generator will place agents at same initial conditions
   ask airplanes-1 [setxy random-xcor random-ycor                   ;; set random position
   set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
@@ -42,14 +42,13 @@ end
 
 to setup-airplanes-2
   create-airplanes-2 total-agents * (1 - agent-1-percent / 100)    ;; set the amount of agents of type II
-  ;;random-seed 58896   + seed                                             ;; make sure that the random generator will place agents at same initial conditions
+  ;random-seed 58896 + seed                                         ;; make sure that the random generator will place agents at same initial conditions
   ask airplanes-2 [setxy random-xcor random-ycor                   ;; set  random position
   set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
   set size 2
   set color 44                                                     ;; set color yellow
-  set conflict-happening false                                     ;; set believe that a conflict will arise false
-  ]
+  set conflict-happening false]                                    ;; set believe that a conflict will arise false
 end
 
 
@@ -58,14 +57,14 @@ end
 
 to self-separate-simple ;
   move-turtles                                                     ;; moving
-  detect-airplanes-simple                                                 ;;detect other turtles when they are in radius and vision
+  detect-airplanes                                                 ;;detect other turtles when they are in radius and vision
   deviate-simple                                                   ;; avoid conflict by deviating in a reactive way
 end
 
 
 to self-separate-cognitive ;
   move-turtles                                                     ;; moving
-  detect-airplanes-cognitive                                                ;;detect other turtles when they are in radius and vision
+  detect-airplanes-cog                                                 ;;detect other turtles when they are in radius and vision
   deviate-cognitive                                                ;; avoid conflict by deviating in a proactive way
 end
 
@@ -76,24 +75,25 @@ to move-turtles
     forward speed                                                  ;; move forward by indicated speed
 end
 
-to detect-airplanes-simple
-  detect-airplanes-in-vision-simple                                      ;; agents look in a cone in front of them
+to detect-airplanes
+  detect-airplanes-in-vision                                       ;; agents look in a cone in front of them
   detect-conflicts                                                 ;; detect conflicts when airplanes are within a radius of minimum separation
 end
 
-to detect-airplanes-cognitive
-  detect-airplanes-in-vision-cognitive                                      ;; agents look in a cone in front of them
+to detect-airplanes-cog
+  detect-airplanes-in-vision-cog                                       ;; agents look in a cone in front of them
   detect-conflicts                                                 ;; detect conflicts when airplanes are within a radius of minimum separation
 end
+
 
 ;; DETECT AIRPLANES
 
-to detect-airplanes-in-vision-simple
+to detect-airplanes-in-vision
   set airplanes-in-vision other turtles in-cone vision vision-angle ;; assumed that an agent can look 90 degrees to the right and the left
 end
 
-to detect-airplanes-in-vision-cognitive
-  set airplanes-in-vision other turtles in-radius vision             ;; assumed that an agent can look 90 degrees to the right and the left
+to detect-airplanes-in-vision-cog
+  set airplanes-in-vision-cog other turtles in-radius vision
 end
 
 to detect-conflicts
@@ -117,7 +117,7 @@ end
 
 
 to deviate-cognitive                                                 ;; define the cognitive properties (used by proactive agents)
-  if any? airplanes-in-vision[                                       ;; Agents observes another agents or more in its vision
+  if any? airplanes-in-vision-cog[                                       ;; Agents observes another agents or more in its vision
     find-nearest-airplane                                            ;; The agent creates believe about the agent which is closest to him
     check-if-conflict-happens
     avoid-aircraft-cognitive]                                        ;; the agent avoids the nearest aircraft in a cognitive way
@@ -127,98 +127,57 @@ end
 
 to find-nearest-airplane
    set nearest-airplane min-one-of
-  airplanes-in-vision [distance myself]                              ;; find nearest airplane in vision
+  airplanes-in-vision-cog [distance myself]                              ;; find nearest airplane in vision
 end
 
 to check-if-conflict-happens
-  ifelse distance-future <= minimum-separation                       ;; check whether a conflict will arise at the next tick or already is happening
-  [set conflict-happening true]                                      ;; if yes, the agent will believe that a conflict will happen
-  [set conflict-happening false ]
+  ifelse distance-future <= minimum-separation                       ;; check whether a conflict will arise at the next tick
+  [set conflict-happening true] [set conflict-happening false]       ;; if yes, the agent will believe that a conflict will happen
 end
 
 
 to avoid-aircraft-cognitive
   ifelse conflict-happening[                                        ;; if the agents believes a conflict will happen
-    align-heading                                                 ;; the agent align its heading
+    align-heading                                                   ;; the agent align its heading
     turn-away                                                       ;; the agent turns away
-    set deviation deviation + 1]                                  ;; count number of deviations performed
+    set deviation deviation + 1]                                    ;; count number of deviations performed
   [set deviation deviation + 0]
 end
-
 
 ;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
-  rt alignment-angle / 2
+  rt subtract-headings [heading] of nearest-airplane [heading] of self
   ;;set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
 end
 
-to-report alignment-angle
-   report subtract-headings [heading] of nearest-airplane [heading] of self
-end
-
 to turn-away
-  rt  deviation-angle + angle-extra
+  rt deviation-angle + angle-extra
 end
 
 
 ;; REPORT NEEDED GEOMETRY AND DISTANCES
 
 to-report distance-future
-  report sqrt  (([xcor] of self + [dx] of self - [xcor] of nearest-airplane - [dx] of nearest-airplane)^ 2 +  ( [ycor] of self + [dy] of self - [ycor] of nearest-airplane - [dy] of nearest-airplane) ^ 2)
+  report ( ( [xcor] of self + [dx] of self - ([xcor] of nearest-airplane + [dx] of nearest-airplane))^ 2 + ( [ycor] of self + [dy] of self - ([ycor] of nearest-airplane + [dy] of nearest-airplane))^ 2)^ 0.5
 end
 
 to-report deviation-angle
-  report atan  minimum-separation distance-to-calc-deviation
+  report atan minimum-separation  distance-to-calc-deviation
 end
 
 to-report distance-to-calc-deviation
-  report sqrt (([xcor] of self  - [xcor] of nearest-airplane -[dy] of nearest-airplane )^ 2 + ( [ycor] of self   - [ycor] of nearest-airplane -[dy] of nearest-airplane )^ 2)
+   report (([xcor] of self  - [xcor] of nearest-airplane - [dx] of nearest-airplane)^ 2 + ( [ycor] of self - [ycor] of nearest-airplane - [dy] of nearest-airplane)^ 2)^ 0.5
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-250
-37
-765
-553
+297
+54
+747
+505
 -1
 -1
-5.965
+5.2
 1
 10
 1
@@ -311,7 +270,7 @@ total-agents
 total-agents
 0
 100
-23.0
+40.0
 1
 1
 NIL
@@ -326,7 +285,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-0.0
+60.0
 1
 1
 %
@@ -341,7 +300,7 @@ simulation-time
 simulation-time
 0
 500
-500.0
+150.0
 10
 1
 NIL
@@ -356,7 +315,7 @@ speed
 speed
 0
 4
-0.5
+0.6
 0.1
 1
 NIL
@@ -427,22 +386,22 @@ angle-extra
 angle-extra
 0
 90
-0.0
+45.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-141
-261
-236
-294
+147
+262
+242
+295
 seed
 seed
 0
 100
-100.0
+45.0
 1
 1
 NIL
@@ -795,7 +754,7 @@ NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment-agent-sets" repetitions="10" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <metric>conflict</metric>
@@ -803,34 +762,32 @@ NetLogo 6.1.0
       <value value="150"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="angle-extra">
-      <value value="30"/>
+      <value value="45"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="vision">
       <value value="4"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="seed">
-      <value value="100"/>
-    </enumeratedValueSet>
     <enumeratedValueSet variable="speed">
       <value value="0.6"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="vision-angle">
-      <value value="180"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="minimum-separation">
       <value value="3"/>
     </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="seed" first="45" step="1" last="55"/>
     <enumeratedValueSet variable="agent-1-percent">
       <value value="0"/>
+      <value value="100"/>
       <value value="20"/>
       <value value="80"/>
-      <value value="100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="total-agents">
       <value value="40"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="experiment" repetitions="100" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <metric>conflict</metric>
@@ -838,13 +795,13 @@ NetLogo 6.1.0
       <value value="150"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="angle-extra">
-      <value value="0"/>
+      <value value="45"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="vision">
       <value value="4"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="seed">
-      <value value="100"/>
+    <enumeratedValueSet variable="speed">
+      <value value="0.4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="minimum-separation">
       <value value="3"/>
@@ -852,14 +809,12 @@ NetLogo 6.1.0
     <enumeratedValueSet variable="vision-angle">
       <value value="180"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="speed">
-      <value value="0.6"/>
-    </enumeratedValueSet>
+    <steppedValueSet variable="seed" first="45" step="1" last="55"/>
     <enumeratedValueSet variable="agent-1-percent">
       <value value="0"/>
+      <value value="100"/>
       <value value="20"/>
       <value value="80"/>
-      <value value="100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="total-agents">
       <value value="40"/>

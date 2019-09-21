@@ -140,7 +140,7 @@ end
 to avoid-aircraft-cognitive
   ifelse conflict-happening[                                        ;; if the agents believes a conflict will happen
     align-heading                                                 ;; the agent align its heading
-    ;turn-away                                                       ;; the agent turns away
+    turn-away                                                       ;; the agent turns away
     set deviation deviation + 1]                                  ;; count number of deviations performed
   [set deviation deviation + 0]
 end
@@ -154,7 +154,8 @@ to align-heading
 end
 
 to-report alignment-angle
-   report subtract-headings [heading] of nearest-airplane [heading] of self
+
+report subtract-headings [heading] of nearest-airplane [heading] of self
 end
 
 to turn-away
@@ -311,7 +312,7 @@ total-agents
 total-agents
 0
 100
-23.0
+40.0
 1
 1
 NIL
@@ -341,7 +342,7 @@ simulation-time
 simulation-time
 0
 500
-500.0
+150.0
 10
 1
 NIL
@@ -356,7 +357,7 @@ speed
 speed
 0
 4
-0.5
+0.6
 0.1
 1
 NIL
