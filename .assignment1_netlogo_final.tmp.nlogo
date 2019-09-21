@@ -147,8 +147,8 @@ end
 ;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
-  ;;rt subtract-headings [heading] of nearest-airplane [heading] of self
-  set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
+  ;rt subtract-headings [heading] of nearest-airplane [heading] of self
+  ;;set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
 end
 
 to turn-away
