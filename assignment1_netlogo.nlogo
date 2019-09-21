@@ -31,7 +31,7 @@ end
 
 to setup-airplanes-1
   create-airplanes-1 total-agents * agent-1-percent / 100          ;; set the amount of agents of type I
-  random-seed 465677                                               ;; make sure that the random generator will place agents at same initial conditions
+  ;;random-seed 465677                                               ;; make sure that the random generator will place agents at same initial conditions
   ask airplanes-1 [setxy random-xcor random-ycor                   ;; set random position
   set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
@@ -42,7 +42,7 @@ end
 
 to setup-airplanes-2
   create-airplanes-2 total-agents * (1 - agent-1-percent / 100)    ;; set the amount of agents of type II
-  random-seed 58896                                                ;; make sure that the random generator will place agents at same initial conditions
+  ;;random-seed 58896                                                ;; make sure that the random generator will place agents at same initial conditions
   ask airplanes-2 [setxy random-xcor random-ycor                   ;; set  random position
   set heading towardsxy random-xcor random-ycor                    ;; set random heading
   set shape "airplane"
@@ -261,7 +261,7 @@ total-agents
 total-agents
 0
 100
-41.0
+40.0
 1
 1
 NIL
@@ -276,7 +276,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-60.0
+80.0
 1
 1
 %
@@ -306,7 +306,7 @@ speed
 speed
 0
 4
-0.6
+0.4
 0.1
 1
 NIL
@@ -321,7 +321,7 @@ vision-angle
 vision-angle
 0
 360
-183.0
+180.0
 1
 1
 NIL
@@ -377,7 +377,7 @@ angle-extra
 angle-extra
 0
 90
-45.0
+30.0
 1
 1
 NIL
@@ -729,6 +729,40 @@ NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment-agent-types-behaviour" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default

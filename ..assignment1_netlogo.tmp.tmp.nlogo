@@ -140,7 +140,7 @@ end
 to avoid-aircraft-cognitive
   ifelse conflict-happening[                                        ;; if the agents believes a conflict will happen
     align-heading                                                 ;; the agent align its heading
-    turn-away                                                       ;; the agent turns away
+    ;turn-away                                                       ;; the agent turns away
     set deviation deviation + 1]                                  ;; count number of deviations performed
   [set deviation deviation + 0]
 end
