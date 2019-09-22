@@ -147,8 +147,8 @@ end
 ;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
-  ;rt subtract-headings [heading] of nearest-airplane [heading] of self
-  ;;set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
+  ;;rt subtract-headings [heading] of nearest-airplane [heading] of self
+  set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
 end
 
 to turn-away
@@ -285,7 +285,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-60.0
+0.0
 1
 1
 %
@@ -815,6 +815,73 @@ NetLogo 6.1.0
       <value value="100"/>
       <value value="20"/>
       <value value="80"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="100" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="total-agents">
       <value value="40"/>
