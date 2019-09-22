@@ -285,7 +285,7 @@ agent-1-percent
 agent-1-percent
 0
 100
-0.0
+100.0
 1
 1
 %
@@ -820,7 +820,7 @@ NetLogo 6.1.0
       <value value="40"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="experiment" repetitions="100" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="1000" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <metric>conflict</metric>
