@@ -1,7 +1,7 @@
 breed [airplanes-1 airplane-1]
 breed [airplanes-2 airplane-2]
 globals[conflict deviation]
-turtles-own [ airplanes-in-vision airplanes-in-radius airplanes-in-vision-cog]
+turtles-own [ airplanes-in-vision airplanes-in-radius]
 airplanes-2-own [nearest-airplane conflict-happening]
 
 ;;setup and go
@@ -93,7 +93,7 @@ to detect-airplanes-in-vision
 end
 
 to detect-airplanes-in-vision-cog
-  set airplanes-in-vision-cog other turtles in-radius vision
+  set airplanes-in-vision other turtles in-radius vision
 end
 
 to detect-conflicts
@@ -117,7 +117,7 @@ end
 
 
 to deviate-cognitive                                                 ;; define the cognitive properties (used by proactive agents)
-  if any? airplanes-in-vision-cog[                                       ;; Agents observes another agents or more in its vision
+  if any? airplanes-in-vision[                                       ;; Agents observes another agents or more in its vision
     find-nearest-airplane                                            ;; The agent creates believe about the agent which is closest to him
     check-if-conflict-happens
     avoid-aircraft-cognitive]                                        ;; the agent avoids the nearest aircraft in a cognitive way
@@ -127,7 +127,7 @@ end
 
 to find-nearest-airplane
    set nearest-airplane min-one-of
-  airplanes-in-vision-cog [distance myself]                              ;; find nearest airplane in vision
+  airplanes-in-vision [distance myself]                              ;; find nearest airplane in vision
 end
 
 to check-if-conflict-happens
@@ -147,8 +147,8 @@ end
 ;; AVOID AIRCRAFT COGNITIVE
 
 to align-heading
-  ;;rt subtract-headings [heading] of nearest-airplane [heading] of self
-  set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
+  rt subtract-headings [heading] of nearest-airplane [heading] of self
+  ;;set heading towardsxy [xcor] of nearest-airplane [ycor] of nearest-airplane
 end
 
 to turn-away
@@ -754,7 +754,7 @@ NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="10" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <metric>conflict</metric>
@@ -766,84 +766,18 @@ NetLogo 6.1.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="vision">
       <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed">
-      <value value="0.6"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="minimum-separation">
       <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="vision-angle">
-      <value value="180"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="seed" first="45" step="1" last="55"/>
-    <enumeratedValueSet variable="agent-1-percent">
-      <value value="0"/>
-      <value value="100"/>
-      <value value="20"/>
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="total-agents">
-      <value value="40"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <metric>conflict</metric>
-    <enumeratedValueSet variable="simulation-time">
-      <value value="150"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="angle-extra">
-      <value value="45"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="vision">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed">
-      <value value="0.4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="minimum-separation">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="vision-angle">
-      <value value="180"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="seed" first="45" step="1" last="55"/>
-    <enumeratedValueSet variable="agent-1-percent">
-      <value value="0"/>
-      <value value="100"/>
-      <value value="20"/>
-      <value value="80"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="total-agents">
-      <value value="40"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="experiment" repetitions="1000" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <metric>conflict</metric>
-    <enumeratedValueSet variable="simulation-time">
-      <value value="150"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="angle-extra">
-      <value value="45"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="vision">
-      <value value="4"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="speed">
-      <value value="0.6"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="seed">
       <value value="45"/>
     </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="vision-angle">
       <value value="180"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="minimum-separation">
-      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="agent-1-percent">
       <value value="0"/>
@@ -855,10 +789,10 @@ NetLogo 6.1.0
       <value value="40"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="experiment" repetitions="50" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <metric>count turtles</metric>
+    <metric>conflict</metric>
     <enumeratedValueSet variable="simulation-time">
       <value value="150"/>
     </enumeratedValueSet>
@@ -868,20 +802,233 @@ NetLogo 6.1.0
     <enumeratedValueSet variable="vision">
       <value value="4"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="speed">
-      <value value="0.6"/>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="seed">
       <value value="45"/>
     </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="vision-angle">
       <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="100" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="minimum-separation">
       <value value="3"/>
     </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="agent-1-percent">
       <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="150" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="200" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="500" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="300" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="total-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="400" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>conflict</metric>
+    <enumeratedValueSet variable="simulation-time">
+      <value value="150"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-extra">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="seed">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="speed">
+      <value value="0.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision-angle">
+      <value value="180"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="agent-1-percent">
+      <value value="0"/>
+      <value value="20"/>
+      <value value="80"/>
+      <value value="100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="total-agents">
       <value value="40"/>

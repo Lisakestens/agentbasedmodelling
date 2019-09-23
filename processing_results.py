@@ -20,7 +20,7 @@ def calc_confidence_interval(data,n,confidence):
     m=scipy.mean(data)
     stand_error=scipy.stats.sem(data)
     h = stand_error * scipy.stats.t.ppf((1 + confidence) / 2, n - 1)
-    return m-h,m+h
+    return [m-h,m+h]
 
 conflict_0=[]
 conflict_20=[]
@@ -28,7 +28,7 @@ conflict_80=[]
 conflict_100=[]
 rows=[]
 # csv file name 
-filename = "assignment1_netlogo_final experiment-spreadsheet.csv"   
+filename = "assignment1_netlogo_final experiment-spreadsheet-10-2.csv"   
 #data=pd.read_csv('assignment1_netlogo_final experiment-spreadsheetnew.txt', delimiter = ';')
 
 
@@ -41,7 +41,7 @@ f.close()
 
    
 
-conflict=rows[17][0].split(';')
+conflict=rows[17]#.split(';')
 
 
 for i in range(len(conflict)-1):
@@ -59,15 +59,23 @@ for i in range(3*n,4*n):
 
 #variation coefficient of data set
 
-var_coeff0=scipy.stats.variation(conflict_0)
-var_coeff20=scipy.stats.variation(conflict_20)
-var_coeff80=scipy.stats.variation(conflict_80)
-var_coeff100=scipy.stats.variation(conflict_100)
+var_coeffA2=scipy.stats.variation(conflict_0)
+var_coeffB2=scipy.stats.variation(conflict_20)
+var_coeffB1=scipy.stats.variation(conflict_80)
+var_coeffA1=scipy.stats.variation(conflict_100)
  
-low,high= calc_confidence_interval(conflict_0,n,confidence)
+confi_A2= calc_confidence_interval(conflict_0,n,confidence)
+confi_B2= calc_confidence_interval(conflict_20,n,confidence)
+confi_B1= calc_confidence_interval(conflict_80,n,confidence)
+confi_A1= calc_confidence_interval(conflict_100,n,confidence)
 
-print(low,high)
+print('variation coefficient', var_coeffA2,var_coeffA1,var_coeffB1,var_coeffB2)
+print ('confidence interval', confi_A2,confi_A1,confi_B1,confi_B2)
 #
+
+
+
+
 boxplotlist=[conflict_0, conflict_20, conflict_80, conflict_100]
 x=[0 ,2 ,8, 10]
 
