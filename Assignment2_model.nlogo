@@ -273,7 +273,7 @@ set travel-time (travel-time + 1 + random-float 0.00001)    ; Aircraft counts ho
 ifelse [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahead 0 = "runwayright"
  [set travel-time-list lput travel-time travel-time-list    ; Put the travel time of the arrived aircraft in the list
   set waiting-time-list lput waiting-time waiting-time-list ; Put the waiting time of the arrived aircraft in the list
-  ]                                                     ; If runway has been reached: die.
+  die]                                                     ; If runway has been reached: die.
   [ifelse free = "false"
     [move-to patch-ahead 0                                  ; Don't move ahead if it is specified that the way is not free,
       set waiting-time (waiting-time + 1)                   ; set waiting time plus one, because he waits one unit of time,
@@ -538,7 +538,7 @@ SWITCH
 173
 stochastic-departure
 stochastic-departure
-1
+0
 1
 -1000
 
