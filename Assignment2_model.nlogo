@@ -23,6 +23,8 @@ aircrafts-own [
   travel-time                                  ; Describes how long an aircraft is on the road
   waiting-time                                 ; Amount of time that aircraft has waited in total when travelling from gate to runway
   last-infra                                   ; Last infrastructure agent that aircraft has passed
+  aircraft-entering-right
+  aircraft-entering-left
 ]
 
 infrastructures-own [
@@ -48,6 +50,7 @@ globals [
   interarrival-time-list                         ; List of all interarrival-times
   travel-time-list                               ; List of all travel times of aircraft
   waiting-time-list                              ; List of all waiting times of aircraft
+
 ]
 
 
@@ -266,10 +269,28 @@ to check-free
 
 end
 
+
+to check-free-to-enter-runway
+  set aircraft-entering-right aircrafts with [[patch-type] of patch-ahead 1 = "runwayright" ]
+  set aircraft-entering-left aircrafts with [[patch-type] of patch-ahead 1 = "runwayleft"]
+  if count aircraft-entering-right + count aircraft-entering-left = 2
+    [
+      ask aircraft-entering-left [
+        set label "ENTERING" ifelse other aircrafts-on patch-ahead -1 != nobody
+        [set free true ask aircraft-entering-right [set free false]]
+        [set free false ask aircraft-entering-right[set free true]]
+      ]
+  ]
+
+
+
+end
+
 ; NORMAL-TAXI-RUNWAY: Procedure to either move forward or not, using the specified variables
 
 to normal-taxi-runway
 set travel-time (travel-time + 1 + random-float 0.00001)    ; Aircraft counts how long it has been travelling, and adds random component, so no travel-times of two a/c are same
+check-free-to-enter-runway
 ifelse [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahead 0 = "runwayright"
  [set travel-time-list lput travel-time travel-time-list    ; Put the travel time of the arrived aircraft in the list
   set waiting-time-list lput waiting-time waiting-time-list ; Put the waiting time of the arrived aircraft in the list
