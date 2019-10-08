@@ -184,6 +184,7 @@ to go
   ask aircrafts [find-infrastructure-mate]  ; Helper procedure: if aircraft is on same patch as an infrastructure agent is, it becomes its "mate"
   ask aircrafts [find-following-patch]      ; Finds its next patch if aircraft goes one patch forward
   ask aircrafts [check-free]                ; Checks if the road is free and no other aircraft is currently on it or will be on it in the next tick
+  ask aircrafts [check-free-to-enter-runway]
   ask aircrafts [normal-taxi-runway]        ; Asks aircraft to taxi, if the road is free to go
   ask aircrafts [check-collision]           ; Checks if a collision is currently happening with another aircraft
 
@@ -274,15 +275,13 @@ to check-free-to-enter-runway
   set aircraft-entering-right aircrafts with [[patch-type] of patch-ahead 1 = "runwayright" ]
   set aircraft-entering-left aircrafts with [[patch-type] of patch-ahead 1 = "runwayleft"]
   if count aircraft-entering-right + count aircraft-entering-left = 2
-    [
+  [
       ask aircraft-entering-left [
-        set label "ENTERING" ifelse other aircrafts-on patch-ahead -1 != nobody
-        [set free true ask aircraft-entering-right [set free false]]
-        [set free false ask aircraft-entering-right[set free true]]
+        ifelse not any? aircrafts-on patch-ahead -1
+        [set free "false" ask aircraft-entering-right[set free "true"]]
+      [set free "true" ask aircraft-entering-right [set free "false"]]
       ]
   ]
-
-
 
 end
 
@@ -290,7 +289,6 @@ end
 
 to normal-taxi-runway
 set travel-time (travel-time + 1 + random-float 0.00001)    ; Aircraft counts how long it has been travelling, and adds random component, so no travel-times of two a/c are same
-check-free-to-enter-runway
 ifelse [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahead 0 = "runwayright"
  [set travel-time-list lput travel-time travel-time-list    ; Put the travel time of the arrived aircraft in the list
   set waiting-time-list lput waiting-time waiting-time-list ; Put the waiting time of the arrived aircraft in the list
@@ -559,7 +557,7 @@ SWITCH
 173
 stochastic-departure
 stochastic-departure
-0
+1
 1
 -1000
 
@@ -594,7 +592,7 @@ taxiway-capacity
 taxiway-capacity
 10
 100
-100.0
+54.0
 1
 1
 NIL
