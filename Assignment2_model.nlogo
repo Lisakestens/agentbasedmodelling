@@ -51,7 +51,7 @@ globals [
   interarrival-time-list                         ; List of all interarrival-times
   travel-time-list                               ; List of all travel times of aircraft
   waiting-time-list                              ; List of all waiting times of aircraft
-
+  aircrafts-on-link
 ]
 
 
@@ -77,6 +77,7 @@ to setup
 set interarrival-time-list []                  ; Initialize interarrival-time-list
   set travel-time-list []                      ; Initialize travel-time-list
   set waiting-time-list []                     ; Initialize waiting-time-list
+  set aircrafts-on-link []
   ask infrastructures [find-patches]           ; Helper procedure that finds Xcor and Ycor of infrastructures
   reset-ticks
 end
@@ -170,25 +171,46 @@ end
 to creating-links
 ask infrastructures at-points [[15 0] [10 0] [5 0][0 0] [-5 0] [-10 0] [-15 0] [15 -5] [10 -5] [5 -5][0 -5] [-5 -5] [-10 -5] [-15 -5] [15 5] [10 5] [5 5][0 5] [-5 5] [-10 5] [-15 5] ]  ;Create the links.
  [create-links-with other infrastructures in-radius 5 [ set weight 1 ] ]   ;The standard weight of a link is 1
- ask infrastructure 26                                                                   ;The final goal infrastructure 19 has specific links
+ ask infrastructure 26                                                                   ;The final goal infrastructure 25 has specific links
  [create-link-with infrastructure 0 [set weight 1]
    create-link-with infrastructure 1 [set weight 1] ]
 end
 
-;;to find-number-of-aicraft-passed
-  ;ask aircrafts[ifelse on-infra = 1 [set
 
 
-;;to create-links-simple
-  ;ask link [who] of infrastructure
-;;end
+
+to update-links-local-saturation
+  if  length sort link-neighbors  > 0
+  [foreach sort link-neighbors [ neighbor ->
+    set aircrafts-on-link []
+    if xcor = [xcor] of neighbor
+    [set aircrafts-on-link [who] of aircrafts with[ patch-x = xcor and  patch-y > ycor and patch-y < [ycor] of neighbor or patch-x = xcor  and patch-y < ycor  and patch-y > [ycor] of neighbor]]
+    if ycor = [ycor] of neighbor
+    [set aircrafts-on-link [who] of aircrafts with [patch-y = ycor and patch-x > xcor and patch-x < [xcor] of neighbor or patch-y = ycor  and patch-x < xcor and patch-x > [xcor] of neighbor]]
+    ask link who [who] of neighbor [set weight 1 +  length aircrafts-on-link]
+    if length aircrafts-on-link > 5 [print "THIS IS A MISTAKE"]
+  ]
+  ]
+end
+
+to update-links-local-number-passed
+  if length sort link-neighbors > 0
+  [foreach sort link-neighbors [ neighbor ->
+    ask link who [who] of neighbor [set weight 1 + [number-of-aircraft-passed] of neighbor]
+    ]
+  ]
+end
+
+
+
+
+
 ;-------------------------------------------------------------------------------------
 ; GO: Once everything has been set up correctly, a go command is used to start and continue the simulation
 
 to go
   creating-aircraft                         ; Creates aircraft every certain amount of ticks
-             ;ask infrastructures [update-links-local
-             ;ask infrastructures [update-link-global]
+
   ask infrastructures [find-path]           ; Helper procedure: asks infrastructures to find the lowest weighted path over the weighted links
 
   ask aircrafts [find-other-aircraft]       ; Helper procedure: finds other aircraft close to aircraft to anticipate on these
@@ -202,6 +224,9 @@ to go
 ; Ask infrastructures to calculate and report the interarrival time when aircraft arrive on one of the runways
   ask infrastructures with [patch-type = "runwayleft" or patch-type = "runwayright"] [calculate-interarrival]
 
+
+  ;ask infrastructures [update-links-local-saturation]
+  ask infrastructures [update-links-local-number-passed]
   tick                                      ; Adds one tick everytime the go procedure is performed
 end
 
@@ -305,7 +330,7 @@ ifelse [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahe
   set waiting-time-list lput waiting-time waiting-time-list ; Put the waiting time of the arrived aircraft in the list
   die]                                                     ; If runway has been reached: die.
   [ifelse free = "false"
-    [ move-to patch-ahead 0                                  ; Don't move ahead if it is specified that the way is not free,
+    [move-to patch-ahead 0                                  ; Don't move ahead if it is specified that the way is not free,
       set waiting-time (waiting-time + 1)                   ; set waiting time plus one, because he waits one unit of time,
       set color red]                                        ; and set color to red, to see clearly that an aircraft is waiting
     [move-to patch-ahead 1                                 ; If free is not false, then one aircraft can move ahead,
@@ -448,10 +473,10 @@ to calculate-interarrival
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-208
-91
-697
-529
+210
+27
+699
+465
 -1
 -1
 13.0
@@ -563,10 +588,10 @@ PENS
 "default" 1.0 1 -16777216 true "" "histogram (waiting-time-list)"
 
 SWITCH
-15
+12
+107
+200
 140
-203
-173
 stochastic-departure
 stochastic-departure
 1
@@ -574,10 +599,10 @@ stochastic-departure
 -1000
 
 MONITOR
-232
-116
-289
-161
+231
+35
+288
+80
 Ac left
 arrived-left
 0
@@ -585,10 +610,10 @@ arrived-left
 11
 
 MONITOR
-624
-114
-687
-159
+618
+45
+681
+90
 Ac right
 arrived-right
 0
@@ -596,10 +621,10 @@ arrived-right
 11
 
 SLIDER
-20
-246
-192
-279
+19
+165
+191
+198
 taxiway-capacity
 taxiway-capacity
 10
