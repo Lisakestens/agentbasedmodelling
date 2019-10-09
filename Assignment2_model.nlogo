@@ -33,6 +33,7 @@ infrastructures-own [
   patch-y                                      ; Ycor of the patch that infrastructure agent is on
   interarrival-time                            ; Time between two aircraft arriving at runway
   activated                                    ; Makes sure interarrival-time starts counting from first arriving aircraft at runway
+  number-of-aircraft-passed
 ]
 
 globals [
@@ -144,7 +145,7 @@ to infrastructure-placing
 set patch-type "runwayconnection"
 set heading 0]]
 ;; infrastructure 4 - 22 are on intersections of roads and get patch-type waypoint
-  ask patches at-points [ [10 0] [5 0][0 0] [-5 0] [-10 0] [15 -5] [10 -5] [5 -5][0 -5] [-5 -5] [-10 -5] [-15 -5] [10 5] [5 5] [0 5] [-5 5] [-10 5] [15 0] [-15 0]]
+  ask patches at-points [ [10 5] [5 5] [0 5] [-5 5] [-10 5] [15 0] [10 0] [5 0][0 0] [-5 0] [-10 0] [-15 0] [15 -5] [10 -5] [5 -5][0 -5] [-5 -5] [-10 -5] [-15 -5]]
 [sprout-infrastructures 1
 [  set size 0.5
   set color grey
@@ -161,6 +162,7 @@ set heading 0]]
 [sprout-infrastructures 1
 [  set size 0.5
   set color grey]]
+
 end
 
 ;-------------------------------------------------------------------------------------
@@ -173,11 +175,20 @@ ask infrastructures at-points [[15 0] [10 0] [5 0][0 0] [-5 0] [-10 0] [-15 0] [
    create-link-with infrastructure 1 [set weight 1] ]
 end
 
+;;to find-number-of-aicraft-passed
+  ;ask aircrafts[ifelse on-infra = 1 [set
+
+
+;;to create-links-simple
+  ;ask link [who] of infrastructure
+;;end
 ;-------------------------------------------------------------------------------------
 ; GO: Once everything has been set up correctly, a go command is used to start and continue the simulation
 
 to go
   creating-aircraft                         ; Creates aircraft every certain amount of ticks
+             ;ask infrastructures [update-links-local
+             ;ask infrastructures [update-link-global]
   ask infrastructures [find-path]           ; Helper procedure: asks infrastructures to find the lowest weighted path over the weighted links
 
   ask aircrafts [find-other-aircraft]       ; Helper procedure: finds other aircraft close to aircraft to anticipate on these
@@ -272,14 +283,14 @@ end
 
 
 to check-free-to-enter-runway
-  set aircraft-entering-right aircrafts with [[patch-type] of patch-ahead 1 = "runwayright" ]
-  set aircraft-entering-left aircrafts with [[patch-type] of patch-ahead 1 = "runwayleft"]
-  if count aircraft-entering-right + count aircraft-entering-left = 2
+  set aircraft-entering-right aircrafts with [[patch-type] of patch-ahead 1 = "runwayright" ]   ;Aircraft in front of the right runway is set as a variable
+  set aircraft-entering-left aircrafts with [[patch-type] of patch-ahead 1 = "runwayleft"]      ; Aircraft in front of the left runway is set as a variable
+  if count aircraft-entering-right + count aircraft-entering-left = 2                           ; check whether they will enter the runway at the same time
   [
-      ask aircraft-entering-left [
-        ifelse not any? aircrafts-on patch-ahead -1
-        [set free "false" ask aircraft-entering-right[set free "true"]]
-      [set free "true" ask aircraft-entering-right [set free "false"]]
+      ask aircraft-entering-left [                                                             ; if there is another agent behind the agent on the left, it gets priority and moves to the runway
+        ifelse not any? aircrafts-on patch-ahead -1                                                ; the agent on the right side has to stop.
+        [set free "false" ask aircraft-entering-right[set free "true"]]                          ; if there is no other agent behind the agent on the left, right runway has priority
+      [set free "true" ask aircraft-entering-right [set free "false"]]                          ; and agent on the  left is stopped
       ]
   ]
 
@@ -294,14 +305,15 @@ ifelse [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahe
   set waiting-time-list lput waiting-time waiting-time-list ; Put the waiting time of the arrived aircraft in the list
   die]                                                     ; If runway has been reached: die.
   [ifelse free = "false"
-    [move-to patch-ahead 0                                  ; Don't move ahead if it is specified that the way is not free,
+    [ move-to patch-ahead 0                                  ; Don't move ahead if it is specified that the way is not free,
       set waiting-time (waiting-time + 1)                   ; set waiting time plus one, because he waits one unit of time,
       set color red]                                        ; and set color to red, to see clearly that an aircraft is waiting
-    [move-to patch-ahead 1                                  ; If free is not false, then one aircraft can move ahead,
+    [move-to patch-ahead 1                                 ; If free is not false, then one aircraft can move ahead,
       set color black                                       ; and color can be (re)set to black
       if on-infra = 1                                       ; If a/c is on infrastructure agent,
       [
        set last-infra infrastructure-mate                                                          ; Set last-infra to keep track of which was previous link
+        ask last-infra [set number-of-aircraft-passed number-of-aircraft-passed + 1]              ; Count number of aircraft passed via the infrastructure agent
       ]
     ]
   ]
