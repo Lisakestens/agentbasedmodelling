@@ -52,6 +52,8 @@ globals [
   travel-time-list                               ; List of all travel times of aircraft
   waiting-time-list                              ; List of all waiting times of aircraft
   aircrafts-on-link
+  randomseed
+  deadlock?
 ]
 
 
@@ -67,6 +69,8 @@ extensions [
 ; SETUP: having determined all agents and their local variables, global vairables, link variables
 
 to setup
+  set randomseed 1 random-seed 1
+  set deadlock? 0
   clear-all
   ask patches [ set pcolor green + 1 ]         ; Make all patches green, except:
   setup-roads                                  ; patches with special patch-types: roads, gates, and runways
@@ -77,7 +81,6 @@ to setup
 set interarrival-time-list []                  ; Initialize interarrival-time-list
   set travel-time-list []                      ; Initialize travel-time-list
   set waiting-time-list []                     ; Initialize waiting-time-list
-  set aircrafts-on-link []
   ask infrastructures [find-patches]           ; Helper procedure that finds Xcor and Ycor of infrastructures
   reset-ticks
 end
@@ -126,6 +129,7 @@ to setup-roads
     set pcolor 105
     set patch-type "runwayright"]
 
+
 end
 
 
@@ -139,11 +143,18 @@ to infrastructure-placing
 [  set size 0.5
   set color grey]]
 ;; infrastructure 2 and 3 are connecting the roads to the runway. They are located at the top left and top right white intersections
-  ask patches at-points [[15 5] [-15 5] ]
+  ask patches at-points [[15 5] ]
 [sprout-infrastructures 1
 [  set size 0.5
   set color grey
-set patch-type "runwayconnection"
+set patch-type "runwayconnectionright"
+set heading 0]]
+
+ ask patches at-points [[-15 5] ]
+[sprout-infrastructures 1
+[  set size 0.5
+  set color grey
+set patch-type "runwayconnectionleft"
 set heading 0]]
 ;; infrastructure 4 - 22 are on intersections of roads and get patch-type waypoint
   ask patches at-points [ [10 5] [5 5] [0 5] [-5 5] [-10 5] [15 0] [10 0] [5 0][0 0] [-5 0] [-10 0] [-15 0] [15 -5] [10 -5] [5 -5][0 -5] [-5 -5] [-10 -5] [-15 -5]]
@@ -177,18 +188,27 @@ ask infrastructures at-points [[15 0] [10 0] [5 0][0 0] [-5 0] [-10 0] [-15 0] [
 end
 
 
+;-----------------------------------------------------------------------------------------------------------------
+;UPDATE THE WEIGHTS OF LINKS
 
+;-----------------------------------------------
+; Update local weights, done in 2 ways, based on saturation or on number of aircraft passed on the crossing
 
 to update-links-local-saturation
   if  length sort link-neighbors  > 0
   [foreach sort link-neighbors [ neighbor ->
-    set aircrafts-on-link []
-    if xcor = [xcor] of neighbor
-    [set aircrafts-on-link [who] of aircrafts with[ patch-x = xcor and  patch-y > ycor and patch-y < [ycor] of neighbor or patch-x = xcor  and patch-y < ycor  and patch-y > [ycor] of neighbor]]
-    if ycor = [ycor] of neighbor
-    [set aircrafts-on-link [who] of aircrafts with [patch-y = ycor and patch-x > xcor and patch-x < [xcor] of neighbor or patch-y = ycor  and patch-x < xcor and patch-x > [xcor] of neighbor]]
-    ask link who [who] of neighbor [set weight 1 +  length aircrafts-on-link]
-    if length aircrafts-on-link > 5 [print "THIS IS A MISTAKE"]
+    let x_inf pxcor
+    let y_inf pycor
+    if x_inf = [pxcor] of neighbor and y_inf > [pycor] of neighbor
+    [set aircrafts-on-link [who] of aircrafts with[ xcor = x_inf   and  ycor < y_inf and ycor > [pycor] of neighbor ]]
+    if  x_inf = [pxcor] of neighbor and y_inf < [pycor] of neighbor
+      [set aircrafts-on-link [who] of aircrafts with[ xcor = x_inf and  ycor > y_inf and ycor < [pycor] of neighbor]]
+    if y_inf = [pycor] of neighbor and x_inf > [pxcor] of neighbor
+      [set aircrafts-on-link [who] of aircrafts with [ycor = y_inf and xcor < x_inf and xcor > [pxcor] of neighbor]]
+    if y_inf = [pycor] of neighbor and x_inf < [pxcor] of neighbor
+        [set aircrafts-on-link [who] of aircrafts with [ycor = y_inf and xcor > x_inf and xcor < [pxcor] of neighbor]]
+
+    ask link who [who] of neighbor [set weight 1 +  length aircrafts-on-link / 4 ]
   ]
   ]
 end
@@ -196,13 +216,47 @@ end
 to update-links-local-number-passed
   if length sort link-neighbors > 0
   [foreach sort link-neighbors [ neighbor ->
-    ask link who [who] of neighbor [set weight 1 + [number-of-aircraft-passed] of neighbor]
+    ask link who [who] of neighbor [
+      set weight 1 + [number-of-aircraft-passed] of neighbor / max [number-of-aircraft-passed] of infrastructures]
     ]
   ]
 end
 
+;--------------------------------------------------------------------------------------
+to update-links-global-diff-left-right
+  if pxcor = 0 [
+    ifelse length [who] of aircrafts with [pxcor < 0] > length [who] of aircrafts with [pxcor > 0]
+    [ ask link item 0 [who] of infrastructures with [[patch-type] of patch-ahead 0 = "runwayleft"] item 0 [who] of infrastructures with [pxcor = -15 and pycor = 5 ]
+      [set weight 1 + 5 ]]
+     [ ask link item 0 [who] of infrastructures with [[patch-type] of patch-ahead 0 = "runwayright"] item 0 [who] of infrastructures with [pxcor = 15 and pycor = 5  ]
+      [set weight 1 + 5 ]]
+    ]
+  if pxcor > 0 [
+     ask link item 0 [who] of infrastructures with [[patch-type] of patch-ahead 0 = "runwayleft"] item 0 [who] of infrastructures with [pxcor = -15 and pycor = 5 ]
+      [set weight 1 ]
+      ask link item 0 [who] of infrastructures with [[patch-type] of patch-ahead 0 = "runwayright"] item 0 [who] of infrastructures with [pxcor = 15 and pycor = 5  ]
+      [set weight 1  ]
+
+  ]
+end
+
+to update-links-global
+  let aircrafts-waiting aircrafts in-radius 30 with [free = "false"]
+  if count aircrafts-waiting > 1 [show aircrafts-waiting]
+    if aircrafts-waiting != nobody [
+    foreach sort-on [waiting-time] aircrafts-waiting [ aircraft-waiting ->
+      let saturated-path nw:weighted-path-to [last-infra] of aircraft-waiting "weight"
+      if length saturated-path > 0 [
+        ask item 0 saturated-path [
+          set weight 1 + [waiting-time] of aircraft-waiting / max [waiting-time] of aircrafts-waiting
+        show weight]
+      ]
+    ]
+  ]
+  find-path
 
 
+end
 
 
 ;-------------------------------------------------------------------------------------
@@ -210,8 +264,8 @@ end
 
 to go
   creating-aircraft                         ; Creates aircraft every certain amount of ticks
-
-  ask infrastructures [find-path]           ; Helper procedure: asks infrastructures to find the lowest weighted path over the weighted links
+  ask infrastructures [update-links-global]
+  ;ask infrastructures [find-path]           ; Helper procedure: asks infrastructures to find the lowest weighted path over the weighted links
 
   ask aircrafts [find-other-aircraft]       ; Helper procedure: finds other aircraft close to aircraft to anticipate on these
   ask aircrafts [find-infrastructure-mate]  ; Helper procedure: if aircraft is on same patch as an infrastructure agent is, it becomes its "mate"
@@ -220,13 +274,12 @@ to go
   ask aircrafts [check-free-to-enter-runway]
   ask aircrafts [normal-taxi-runway]        ; Asks aircraft to taxi, if the road is free to go
   ask aircrafts [check-collision]           ; Checks if a collision is currently happening with another aircraft
-
+  ask aircrafts [check-deadlocks]
+  ask infrastructures [update-links-local-saturation]
+  ;ask infrastructures [update-links-local-number-passed]
+  ;ask infrastructures [update-links-global]
 ; Ask infrastructures to calculate and report the interarrival time when aircraft arrive on one of the runways
   ask infrastructures with [patch-type = "runwayleft" or patch-type = "runwayright"] [calculate-interarrival]
-
-
-  ;ask infrastructures [update-links-local-saturation]
-  ask infrastructures [update-links-local-number-passed]
   tick                                      ; Adds one tick everytime the go procedure is performed
 end
 
@@ -415,7 +468,7 @@ to find-other-aircraft-1-2-3                                         ; Find and 
 end
 
 to find-infrastructure-mate                                          ; If aircraft is on the same patch as an infrastructure agent, it becomes its "mate".
-  ifelse [patch-type] of patch-ahead 0 = "gates" or [patch-type] of patch-ahead 0 = "waypoint" or [patch-type] of patch-ahead 0 = "runwayconnection" or [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahead 0 = "runwayright"
+  ifelse [patch-type] of patch-ahead 0 = "gates" or [patch-type] of patch-ahead 0 = "waypoint" or [patch-type] of patch-ahead 0 = "runwayconnectionleft" or [patch-type] of patch-ahead 0 = "runwayconnectionright" or [patch-type] of patch-ahead 0 = "runwayleft" or [patch-type] of patch-ahead 0 = "runwayright"
 [set infrastructure-mate min-one-of infrastructures [distance myself]; Only if on gate, runwayconnection or waypoint,
  find-facing                                                         ; aircraft is faced in new directsion using find-facing
  set on-infra 1]                                                     ; Furthermore, on-infra is set to 1 of the aircraft is on the same patch as
@@ -448,10 +501,22 @@ to check-collision                                                   ; Checks fo
   [set collision? false]
   [
   ifelse distance nearest-aircraft < 0.1                             ; If the distance is smaller than 0.1 patch, there is a collision, which is summed
-    [ set collision? true set counter-collisions (counter-collisions + 1) wait 2]
+    [ set collision? true  set counter-collisions (counter-collisions + 1) wait 2]
     [ set collision? false ]
   ]
 end
+
+to check-deadlocks
+  find-nearest-aircraft
+  ifelse nearest-aircraft = nobody
+  [set deadlock? deadlock?]
+  [
+    ifelse [patch-ahead 0] of nearest-aircraft = patch-ahead 1 and  abs [heading] of nearest-aircraft - heading = 180
+    [set deadlock? deadlock? + 1]
+    [set deadlock? deadlock?]
+  ]
+end
+
 
 ;  CALCULATE-INTERARRIVAL: Calculate and report interarrival time when aircraft have arrived at the runways
 
@@ -538,18 +603,19 @@ PLOT
 11
 928
 161
-Number of collisions
+Number of collisions and deadlocks
 Time
-Collisions
+Collisions/Deadlocks
 0.0
 10.0
 0.0
 10.0
 true
-false
+true
 "" ""
 PENS
 "Collisions" 1.0 0 -16777216 true "" "plot counter-collisions"
+"Deadlocks" 1.0 0 -7500403 true "" "plot deadlock?"
 
 PLOT
 727
